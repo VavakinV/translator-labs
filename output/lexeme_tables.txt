@@ -1,0 +1,57 @@
+=== IDENTIFIERS ===
+I1: array
+I2: summ
+I3: x
+I4: a
+I5: b
+I6: result
+=== FUNCTIONS ===
+F1: sum_arr
+F2: mult
+=== NUMBERS ===
+N1: 0
+N2: 1
+N3: 5
+N4: 4
+N5: 2
+=== REAL_NUMBERS ===
+=== STRINGS ===
+=== OPERATORS ===
+O1: +
+O2: -
+O3: *
+O4: /
+O5: **
+O6: <
+O7: >
+O8: ==
+O9: !=
+O10: >=
+O11: <=
+=== DIVIDERS ===
+R1:  
+R2: ,
+R3: .
+R4: :
+R5: (
+R6: )
+R7: [
+R8: ]
+=== KEYWORDS ===
+W1: =
+W2: if
+W3: elif
+W4: else
+W5: def
+W6: return
+W7: for
+W8: in
+W9: while
+W10: input
+W11: print
+W12: int
+W13: float
+W14: str
+W15: True
+W16: False
+W17: None
