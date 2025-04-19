@@ -3,16 +3,16 @@ from tkinter import scrolledtext
 
 priority = {
     '(': 0, '[': 0, 'АЭМ': 0, 'Ф': 0, 'if': 0,
-    ',': 1, ')': 1, ']': 1, ':': 1, 'else': 1, 'INDENT': 1, 'DEINDENT': 1, 
+    ',': 1, ')': 1, ']': 1, ':': 1, 'else': 1, 'DEINDENT': 1, 
     '=': 2,
-    '!=': 4, '>': 4, '<': 4, '==': 4,
-    '+': 5, '-': 5,
-    '*': 6, '/': 6, '%': 6,
-    '**': 7
+    '!=': 3, '>': 3, '<': 3, '==': 3,
+    '+': 4, '-': 4,
+    '*': 5, '/': 5, '%': 5,
+    '**': 6
 }
 
 def is_identifier(token):
-    return not(token in priority.keys())
+    return not(token in priority.keys()) and not(token in ("def", "\n"))
 
 def tokenize(code):
     tokens = []
@@ -25,7 +25,6 @@ def tokenize(code):
             if current_indent > indent_stack[-1]:
                 indent_stack.append(current_indent)
                 i += current_indent
-                tokens.append('INDENT')
             else:
                 while current_indent < indent_stack[-1]:
                     tokens.append('DEINDENT')
@@ -34,6 +33,11 @@ def tokenize(code):
                     raise IndentationError("Несогласованные отступы")
 
         ch = code[i]
+
+        if ch == "\n":
+            tokens.append(ch)
+            i += 1
+            continue
 
         if ch.isspace():
             i += 1
@@ -76,11 +80,11 @@ def to_rpn(code):
 
     while i < len(tokens):
         token = tokens[i]
+        print(token)
         if is_identifier(token):
             if (i + 1 < len(tokens)) and (tokens[i+1] == '('):
                 stack.append(('Ф', token, 1))
-                stack.append('(')
-                i += 1
+                output.append(token)
             elif (i + 1 < len(tokens)) and (tokens[i+1] == '['):
                 stack.append(('АЭМ', 2))
                 stack.append('[')
@@ -97,15 +101,30 @@ def to_rpn(code):
                 if tokens[i] != ',':
                     init_values.append(tokens[i])
                 else:
-                    output.append(to_rpn(init_values))
+                    output.append(to_rpn(''.join(init_values)))
                     output.append(',')
                     init_values = []
                 i += 1
-            output.append(to_rpn(init_values) + ']')
+            output.append(to_rpn(''.join(init_values)) + ']')
             init_values = []
             output.append('=')
-            i += 1
-
+            
+        elif (token == '(') and stack and isinstance(stack[-1], tuple) and (stack[-1][0] == 'Ф'):
+            init_values = []
+            new_f_tocken = ('Ф', stack[-1][1], stack[-1][2])
+            while (i < len(tokens)) and (tokens[i] != ')'):
+                i += 1
+                if tokens[i] != ',':
+                    init_values.append(tokens[i])
+                else:
+                    output.append(to_rpn(''.join(init_values)))
+                    curr_f_tocken = stack.pop()
+                    new_f_tocken = ('Ф', curr_f_tocken[1], curr_f_tocken[2]+1)
+                    stack.append(new_f_tocken)
+                    init_values = []
+            output.append(to_rpn(''.join(init_values)))
+            output.append(f"{new_f_tocken[2]+1}Ф")
+            stack.pop()
 
         elif (token == ',') and stack and (stack[-1] == '('):
             while stack and (stack[-1] != '('):
@@ -115,8 +134,6 @@ def to_rpn(code):
                         output.append(f"{curr_token[1]} {curr_token[2]}Ф")
                     elif curr_token[0] == 'АЭМ':
                         output.append(f"{curr_token[1]}АЭМ")
-                    elif curr_token[0] == "if":
-                        output.append(f"{curr_token[1]} УПЛ")
                 else:
                     output.append(curr_token)
             for j in range(len(stack)):
@@ -124,7 +141,7 @@ def to_rpn(code):
                     name, count = stack[j][1], stack[j][2] + 1
                     stack[j] = ('Ф', name, count)
                     break
-        
+
         elif (token == ']') and stack and (stack[-1] == '[') and (i + 1 < len(tokens)) and (tokens[i+1] == '['):
             i += 2
             for j in range(len(stack)-1, -1, -1):
@@ -156,7 +173,7 @@ def to_rpn(code):
                 output.append(stack.pop())
             if stack:
                 stack.pop()
-                if stack and isinstance(stack[1], tuple) and (stack[-1][0]) == 'АЭМ':
+                if stack and isinstance(stack[-1], tuple) and (stack[-1][0]) == 'АЭМ':
                     count = stack.pop()[1]
                     output.append(f"{count}АЭМ")
         
@@ -166,36 +183,65 @@ def to_rpn(code):
             if_stack.append(current_label)
             stack.append(("if", current_label))
 
-        elif token == 'else':
+        elif token == 'else' and (i+1 < len(tokens)) and (tokens[i+1] == ':'):
             if if_stack:
                 else_label = f"М{label_counter}"
-                label_counter += 1
-                output.append(f"{if_stack[-1]} УПЛ")
-                else_labels.append(else_label)
                 output.append(else_label)
-        
-        elif token == 'INDENT':
+                label_counter += 1
+                output.append(f"БП {if_stack[-1]}:")
+                else_labels.append(else_label)
+                i += 1
+
+        elif (i+1 < len(tokens)) and (token == ':') and (tokens[i+1] == '\n') and not(if_stack):
             output.append('НП')
-            stack.append(token)
+            stack.append(tokens[i])
+            i += 1
+
+        elif token == ':':
+            if if_stack:
+                while not(stack[-1][0] == 'if'):
+                    output.append(stack.pop())
+                output.append(f"{if_stack[-1]} УПЛ")
+                stack.pop()
         
         elif token == 'DEINDENT':
-            while stack and stack[-1] != 'INDENT':
+            while stack and stack[-1] != ':':
                 top = stack.pop()
-                if isinstance(top, tuple) and top[0] == 'if':
-                    output.append(f"{top[1]} УПЛ")
-                elif isinstance(top, str):
+                if isinstance(top, str):
                     output.append(top)
             if stack:
                 stack.pop()
-            output.append('КП')
+
+            if (i+1 < len(tokens)) and (tokens[i+1] != 'else'):
+                if if_stack and not(else_labels):
+                    output.append(f"{if_stack.pop()}:")
+                else:
+                    output.append('КП')
+
             if else_labels:
-                output.append(else_labels.pop())
+                output.append(f"{else_labels.pop()}:")
+        
+        elif token == "\n":
+            if (i+1 < len(tokens)) and (tokens[i+1] == 'DEINDENT'):
+                i += 1
+                continue
+            while stack:
+                curr_token = stack.pop()
+                if isinstance(curr_token, tuple):
+                    if curr_token[0] == 'Ф':
+                        output.append(f"{curr_token[1]} {curr_token[2]}Ф")
+                    elif curr_token[0] == 'АЭМ':
+                        output.append(f"{curr_token[1]}АЭМ")
+                else:
+                    output.append(curr_token)
+            i += 1
+            continue
 
         elif token in priority:
-            while (stack and not isinstance(stack[-1], tuple)) and not (stack[-1] in ['(', '[', 'INDENT']) and (priority.get(stack[-1], 0) >= priority[token]):
+            while (stack and not isinstance(stack[-1], tuple)) and not (stack[-1] in ['(', '[', ':']) and (priority.get(stack[-1], 0) >= priority[token]):
                 output.append(stack.pop())
             stack.append(token)
-        
+
         i += 1
 
 
@@ -206,12 +252,11 @@ def to_rpn(code):
                 output.append(f"{curr_token[1]} {curr_token[2]}Ф")
             elif curr_token[0] == 'АЭМ':
                 output.append(f"{curr_token[1]}АЭМ")
-            elif curr_token[0] == "if":
-                output.append(f"{curr_token[1]} УПЛ")
         else:
             output.append(curr_token)
         
     return ' '.join(output)
+
 
 def convert():
     code = text_input.get("1.0", tk.END).strip()
