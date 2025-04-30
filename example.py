@@ -1,5 +1,6 @@
 def summ(a, b):
-    return a + b
+    n = a + b
+    return n
 
 arr = [1+1, 2, 3]
 x = arr[0]

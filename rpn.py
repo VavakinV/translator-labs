@@ -80,7 +80,7 @@ def to_rpn(code):
 
     while i < len(tokens):
         token = tokens[i]
-        print(token)
+        
         if is_identifier(token):
             if (i + 1 < len(tokens)) and (tokens[i+1] == '('):
                 stack.append(('Ф', token, 1))
@@ -105,7 +105,7 @@ def to_rpn(code):
                     output.append(',')
                     init_values = []
                 i += 1
-            output.append(to_rpn(''.join(init_values)) + ']')
+            output.append(to_rpn(''.join(init_values)) + ' ]')
             init_values = []
             output.append('=')
             
@@ -194,7 +194,7 @@ def to_rpn(code):
 
         elif (i+1 < len(tokens)) and (token == ':') and (tokens[i+1] == '\n') and not(if_stack):
             output.append('НП')
-            stack.append(tokens[i])
+            # stack.append(tokens[i])
             i += 1
 
         elif token == ':':
