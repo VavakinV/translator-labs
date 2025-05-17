@@ -7,7 +7,13 @@ x = arr[0]
 y = arr[1]
 s = summ(arr[0], arr[1])
 
-if s % 2 == 0:
+for i in range(10):
+    s = s - 1
+
+while s < 0:
+    s = s + 1
+
+if s - 2 == 0:
     x = 1
 else:
     x = 2

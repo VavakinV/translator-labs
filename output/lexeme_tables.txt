@@ -1,19 +1,24 @@
 === IDENTIFIERS ===
-I1: array
-I2: summ
-I3: x
-I4: a
-I5: b
-I6: result
+I1: a
+I2: b
+I3: n
+I4: arr
+I5: x
+I6: y
+I7: s
+I8: i
+I9: c
 === FUNCTIONS ===
-F1: sum_arr
-F2: mult
+F1: summ
+F2: range
 === NUMBERS ===
-N1: 0
-N2: 1
-N3: 5
-N4: 4
-N5: 2
+N1: 1
+N2: 2
+N3: 3
+N4: 0
+N5: 10
+N6: 20
+N7: 30
 === REAL_NUMBERS ===
 === STRINGS ===
 === OPERATORS ===
@@ -37,6 +42,8 @@ R5: (
 R6: )
 R7: [
 R8: ]
+R9: INDENT
+R10: DEINDENT
 === KEYWORDS ===
 W1: =
 W2: if

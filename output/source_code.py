@@ -1,14 +1,27 @@
-def sum_arr(array):
-    summ = 0
-    for x in array:
-        summ = summ + x
-    return summ
+def summ(a, b):
+    n = a + b
+    return n
 
-def mult(a, b):
-    result = a * b
-    return result
+arr = [1+1, 2, 3]
+x = arr[0]
+y = arr[1]
+s = summ(arr[0], arr[1])
 
-a = [1, 5, 4, 2]
+for i in range(10):
+    s = s - 1
 
-print(sum_arr(a))
-print(mult(a[0], a[1]))
+while s < 0:
+    s = s + 1
+
+if s - 2 == 0:
+    x = 1
+else:
+    x = 2
+
+a = 10
+b = 20
+
+if b < 30:
+    c = a ** 2 + b ** 2
+else:
+    c = 0
